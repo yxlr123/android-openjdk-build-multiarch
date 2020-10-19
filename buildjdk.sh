@@ -23,6 +23,14 @@ sudo apt -y install gcc-multilib g++-multilib libxtst-dev libasound2-dev libelf-
 # Patch for aarch64
 cp -R -f override-jre-files/* openjdk/
 
+# TODO remove :v
+cat <<EOT >> $NDK_HOME/platforms/android-21/arch-*/usr/include/sys/stat.h
+
+#define S_IREAD S_IRUSR
+#define S_IWRITE S_IWUSR
+#define S_IEXEC S_IXUSR
+EOT
+
 cd openjdk
 rm -rf build
 bash ./configure \
