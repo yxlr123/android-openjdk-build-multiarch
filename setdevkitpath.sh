@@ -8,7 +8,7 @@ export TOOLCHAIN=$ANDROID_DEVKIT
 export ANDROID_INCLUDE=$NDK/platforms/android-21/arch-${TARGET_SHORT}/usr/include
 
 export CPPFLAGS="-I$ANDROID_INCLUDE" # -I/usr/include -I/usr/lib
-export LDFLAGS="-L$NDK/platforms/android-21/arch-${TARGET_SHORT}/usr/lib -lc++_shared"
+export LDFLAGS="-L$NDK/platforms/android-21/arch-${TARGET_SHORT}/usr/lib"
 
 # Configure and build.
 # Deprecated...
