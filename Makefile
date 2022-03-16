@@ -113,35 +113,56 @@ check:
 	@echo $(RANLIB)
 	@echo $(STRIP)
 
-
-
-ndk:
-
-toolchain:
-	$(NDK)/build/tools/make-standalone-toolchain.sh \
-		--arch=$(TARGET_SHORT) \
-		--platform=android-21 \
-		--install-dir=$(NDK)/generated-toolchains/android-$(TARGET_SHORT)-toolchain
-	cp devkit.info.$(TARGET_SHORT) $(NDK)/generated-toolchains/android-$(TARGET_SHORT)-toolchain/
-
-get-deps:
-	wget https://downloads.sourceforge.net/project/freetype/freetype2/$(FREETYPE_VERSION)/freetype-$(FREETYPE_VERSION).tar.gz
-	tar xf freetype-$(FREETYPE_VERSION).tar.gz
-	wget https://github.com/apple/cups/releases/download/v2.2.4/cups-2.2.4-source.tar.gz
-	tar xf cups-2.2.4-source.tar.gz
-	rm cups-2.2.4-source.tar.gz freetype-$(FREETYPE_VERSION).tar.gz
+deps:
+	wget https://downloads.sourceforge.net/project/freetype/freetype2/$(FREETYPE_VERSION)/freetype-$(FREETYPE_VERSION).tar.gz; \
+	tar xf freetype-$(FREETYPE_VERSION).tar.gz; \
+	wget https://github.com/apple/cups/releases/download/v2.2.4/cups-2.2.4-source.tar.gz; \
+	tar xf cups-2.2.4-source.tar.gz; \
+	rm cups-2.2.4-source.tar.gz freetype-$(FREETYPE_VERSION).tar.gz; \
 	if [[ '$(BUILD_IOS)' != '1'; then \
 		sudo apt update; \
 		sudo apt -y install autoconf python unzip zip; \
 		wget -nc -nv -O android-ndk-$(NDK_VERSION)-linux-x86_64.zip "https://dl.google.com/android/repository/android-ndk-$(NDK_VERSION)-linux-x86_64.zip"; \
 		unzip -q android-ndk-$(NDK_VERSION)-linux-x86_64.zip; \
+		$(NDK)/build/tools/make-standalone-toolchain.sh \
+		--arch=$(TARGET_SHORT) \
+		--platform=android-21 \
+		--install-dir=$(NDK)/generated-toolchains/android-$(TARGET_SHORT)-toolchain
+		cp devkit.info.$(TARGET_SHORT) $(NDK)/generated-toolchains/android-$(TARGET_SHORT)-toolchain/
+		cd freetype-$(FREETYPE_VERSION); \
+		export PATH=$(TOOLCHAIN)/bin:$$PATH
+		./configure \
+			--host=$TARGET \
+			--prefix=`pwd`/build_android-$(TARGET_SHORT) \
+			--without-zlib \
+			--with-png=no \
+			--with-harfbuzz=no $EXTRA_ARGS
 	else \
 		chmod +x ios-arm64-clang; \
 		chmod +x ios-arm64-clang++; \
 		chmod +x macos-host-cc; \
+		LDFLAGS=-"arch arm64 -isysroot $thesysroot -miphoneos-version-min=12.0"; \
+		export CC=$(thecc); \
+		export CXX=$(thecxx); \
+		./configure \
+			--host=$(TARGET) \
+			--prefix=$(PWD)/build_android-$(TARGET_SHORT) \
+			--enable-shared=no --enable-static=yes \
+			--without-zlib \
+			--with-brotli=no \
+			--with-png=no \
+			--with-harfbuzz=no \
+			"CFLAGS=-arch arm64 -pipe -std=c99 -Wno-trigraphs -fpascal-strings -O2 -Wreturn-type -Wunused-variable -fmessage-length=0 -fvisibility=hidden -miphoneos-version-min=12.0 -I$(thesysroot)/usr/include/libxml2/ -isysroot $thesysroot" \
+			AR=/usr/bin/ar \
+			"LDFLAGS=$$LDFLAGS"; \
+	fi; \
+	CFLAGS=-fno-rtti; \
+	CXXFLAGS=-fno-rtti; \
+	make -j4; \
+	make install; \
+	if [ -f "$${namefreetype}.a" ]; then \
+		clang -fPIC -shared $$LDFLAGS -lbz2 -Wl,-all_load $${namefreetype}.a -o $${namefreetype}.dylib; \
 	fi
-
-build-deps:
 
 clone-jdk:
 
