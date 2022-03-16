@@ -36,10 +36,14 @@ $(warning Building JVM with debug level $(JDK_DEBUG_LEVEL))
 # Set the variant of the JVM to compile [client/server]
 ifeq (aarch32,$(TARGET_JDK))
 JVM_VARIANTS ?= client
+TARGET_PHYS  ?= aarch32-linux-androideabi
 else ifeq (arm,$(TARGET_JDK))
 JVM_VARIANTS ?= client
+TARGET_JDK   ?= aarch32
+TARGET_PHYS  ?= aarch32-linux-androideabi
 else
 JVM_VARIANTS ?= server
+TARGET_PHYS  ?= $(TARGET)
 endif
 $(warning Building JVM with variant $(JVM_VARIANTS))
 
@@ -166,8 +170,51 @@ deps:
 
 clone-jdk:
 
-build-jdk-no-configure:
+jdk-no-configure:
 
-build-jdk:
+jdk:
+	FREETYPE_DIR=$(PWD)/freetype-$(FREETYPE_VERSION)/build_android-$(TARGET_SHORT); \
+	CUPS_DIR=$(PWD)/cups-2.2.4; \
+	CFLAGS+=" -DLE_STANDALONE"; \
+	if [ "$(BUILD_IOS)" != "1" ]; then \
+		export CFLAGS+=" -O3"; \
+		ln -s -f /usr/include/X11 $(ANDROID_INCLUDE)/; \
+		ln -s -f /usr/include/fontconfig $(ANDROID_INCLUDE)/; \
+		AUTOCONF_x11arg="--x-includes=$(ANDROID_INCLUDE)/X11"; \
+		export LDFLAGS+=" -L$(PWD)/dummy_libs"; \
+		sudo apt -y install systemtap-sdt-dev gcc-multilib g++-multilib libxtst-dev libasound2-dev libelf-dev libfontconfig1-dev libx11-dev; \
+		mkdir -p dummy_libs; \
+		ar cru dummy_libs/libpthread.a; \
+		ar cru dummy_libs/libthread_db.a; \
+	else \
+		ln -s -f /opt/X11/include/X11 $(ANDROID_INCLUDE)/; \
+		platform_args="--with-toolchain-type=clang"; \
+		AUTOCONF_x11arg="--with-x=/opt/X11/include/X11 --prefix=/usr/lib"; \
+		sameflags="-arch arm64 -isysroot $(thesysroot) -miphoneos-version-min=12.0 -DHEADLESS=1 -I$(PWD)/ios-missing-include -Wno-implicit-function-declaration"; \
+		export CFLAGS+=" $$sameflags"; \
+		export CXXFLAGS="$$sameflags"; \
+		HOMEBREW_NO_AUTO_UPDATE=1 brew install ldid xquartz; \
+	fi; \
+	ln -s -f $(CUPS_DIR)/cups $(ANDROID_INCLUDE)/; \
+	cd openjdk; \
+	bash ./configure \
+		--openjdk-target=$TARGET_PHYS \
+		--with-extra-cflags="$$CFLAGS" \
+		--with-extra-cxxflags="$$CFLAGS" \
+		--with-extra-ldflags="$$LDFLAGS" \
+		--enable-option-checking=fatal \
+		--with-jdk-variant=normal \
+		--with-jvm-variants="$(JVM_VARIANTS) \
+		--with-cups-include=$$CUPS_DIR \
+		--with-devkit=$$TOOLCHAIN \
+		--with-debug-level=$$JDK_DEBUG_LEVEL \
+		--with-fontconfig-include=$(ANDROID_INCLUDE) \
+		--with-freetype-lib=$$FREETYPE_DIR/lib \
+		--with-freetype-include=$$FREETYPE_DIR/include/freetype2 \
+		$$AUTOCONF_x11arg $$AUTOCONF_EXTRA_ARGS \
+		--x-libraries=/usr/lib \
+		$$platform_args; \
+	cd build/$(JVM_PLATFORM)-$(TARGET_JDK)-normal-$(JVM_VARIANTS)-$(JDK_DEBUG_LEVEL); \
+	make JOBS=4 images
 
 package:
