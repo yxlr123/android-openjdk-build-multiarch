@@ -113,11 +113,33 @@ check:
 	@echo $(RANLIB)
 	@echo $(STRIP)
 
+
+
 ndk:
 
 toolchain:
+	$(NDK)/build/tools/make-standalone-toolchain.sh \
+		--arch=$(TARGET_SHORT) \
+		--platform=android-21 \
+		--install-dir=$(NDK)/generated-toolchains/android-$(TARGET_SHORT)-toolchain
+	cp devkit.info.$(TARGET_SHORT) $(NDK)/generated-toolchains/android-$(TARGET_SHORT)-toolchain/
 
 get-deps:
+	wget https://downloads.sourceforge.net/project/freetype/freetype2/$(FREETYPE_VERSION)/freetype-$(FREETYPE_VERSION).tar.gz
+	tar xf freetype-$(FREETYPE_VERSION).tar.gz
+	wget https://github.com/apple/cups/releases/download/v2.2.4/cups-2.2.4-source.tar.gz
+	tar xf cups-2.2.4-source.tar.gz
+	rm cups-2.2.4-source.tar.gz freetype-$(FREETYPE_VERSION).tar.gz
+	if [[ '$(BUILD_IOS)' != '1'; then \
+		sudo apt update; \
+		sudo apt -y install autoconf python unzip zip; \
+		wget -nc -nv -O android-ndk-$(NDK_VERSION)-linux-x86_64.zip "https://dl.google.com/android/repository/android-ndk-$(NDK_VERSION)-linux-x86_64.zip"; \
+		unzip -q android-ndk-$(NDK_VERSION)-linux-x86_64.zip; \
+	else \
+		chmod +x ios-arm64-clang; \
+		chmod +x ios-arm64-clang++; \
+		chmod +x macos-host-cc; \
+	fi
 
 build-deps:
 
