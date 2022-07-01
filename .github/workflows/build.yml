@@ -7,6 +7,8 @@ jobs:
     strategy:
       matrix:
         arch: [ "aarch32", "aarch64", "x86", "x86_64" ]
+      matrix:
+        archTargets: [ "arm-linux-androideabi", "aarch64-linux-android", "i686-linux-android", "x86_64-linux-androidx" ]
       fail-fast: false
 
     name: "Build for Android ${{matrix.arch}}"
@@ -19,13 +21,13 @@ jobs:
       with:
         java-version: 1.7
     - name: step one
-      run: make deps
+      run: make deps TARGET=${{matrix.archTargets}} TARGET_JDK=${{matrix.arch}}
     - name: step two
-      run: make clone-jdk
+      run: make clone-jdk TARGET=${{matrix.archTargets}} TARGET_JDK=${{matrix.arch}}
     - name: step three
-      run: make jdk
+      run: make jdk TARGET=${{matrix.archTargets}} TARGET_JDK=${{matrix.arch}}
     - name: step four
-      run: make package
+      run: make package TARGET=${{matrix.archTargets}} TARGET_JDK=${{matrix.arch}}
     - name: Upload JDK build output
       uses: actions/upload-artifact@v2
       with:
@@ -58,19 +60,19 @@ jobs:
     - name: step one
       run: |
         export BUILD_IOS=1
-        make deps
+        make deps TARGET=aarch64-macos-ios TARGET_JDK=aarch64
     - name: step two
       run: |
         export BUILD_IOS=1
-        make clone-jdk
+        make clone-jdk TARGET=aarch64-macos-ios TARGET_JDK=aarch64
     - name: step three
       run: |
         export BUILD_IOS=1
-        make jdk
+        make jdk TARGET=aarch64-macos-ios TARGET_JDK=aarch64
     - name: step four
       run: |
         export BUILD_IOS=1
-        make package
+        make package TARGET=aarch64-macos-ios TARGET_JDK=aarch64 
 
     - name: Upload JDK build output
       uses: actions/upload-artifact@v2
