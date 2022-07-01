@@ -123,7 +123,7 @@ deps:
 	wget https://github.com/apple/cups/releases/download/v2.2.4/cups-2.2.4-source.tar.gz; \
 	tar xf cups-2.2.4-source.tar.gz; \
 	rm cups-2.2.4-source.tar.gz freetype-$(FREETYPE_VERSION).tar.gz; \
-	if [[ '$(BUILD_IOS)' != '1'; then \
+	if [[ '$(BUILD_IOS)' != '1' ]]; then \
 		sudo apt update; \
 		sudo apt -y install autoconf python unzip zip; \
 		wget -nc -nv -O android-ndk-$(NDK_VERSION)-linux-x86_64.zip "https://dl.google.com/android/repository/android-ndk-$(NDK_VERSION)-linux-x86_64.zip"; \
@@ -131,23 +131,24 @@ deps:
 		$(NDK)/build/tools/make-standalone-toolchain.sh \
 		--arch=$(TARGET_SHORT) \
 		--platform=android-21 \
-		--install-dir=$(NDK)/generated-toolchains/android-$(TARGET_SHORT)-toolchain
-		cp devkit.info.$(TARGET_SHORT) $(NDK)/generated-toolchains/android-$(TARGET_SHORT)-toolchain/
+		--install-dir=$(NDK)/generated-toolchains/android-$(TARGET_SHORT)-toolchain; \
+		cp devkit.info.$(TARGET_SHORT) $(NDK)/generated-toolchains/android-$(TARGET_SHORT)-toolchain/; \
 		cd freetype-$(FREETYPE_VERSION); \
-		export PATH=$(TOOLCHAIN)/bin:$$PATH
+		export PATH=$(TOOLCHAIN)/bin:$$PATH; \
 		./configure \
-			--host=$TARGET \
-			--prefix=`pwd`/build_android-$(TARGET_SHORT) \
+			--host=$(TARGET) \
+			--prefix=$(PWD)/build_android-$(TARGET_SHORT) \
 			--without-zlib \
 			--with-png=no \
-			--with-harfbuzz=no $EXTRA_ARGS
+			--with-harfbuzz=no $$EXTRA_ARGS; \
 	else \
 		chmod +x ios-arm64-clang; \
 		chmod +x ios-arm64-clang++; \
 		chmod +x macos-host-cc; \
-		LDFLAGS=-"arch arm64 -isysroot $thesysroot -miphoneos-version-min=12.0"; \
+		LDFLAGS=-"arch arm64 -isysroot $(thesysroot) -miphoneos-version-min=12.0"; \
 		export CC=$(thecc); \
 		export CXX=$(thecxx); \
+		cd freetype-$(FREETYPE_VERSION); \
 		./configure \
 			--host=$(TARGET) \
 			--prefix=$(PWD)/build_android-$(TARGET_SHORT) \
@@ -156,7 +157,7 @@ deps:
 			--with-brotli=no \
 			--with-png=no \
 			--with-harfbuzz=no \
-			"CFLAGS=-arch arm64 -pipe -std=c99 -Wno-trigraphs -fpascal-strings -O2 -Wreturn-type -Wunused-variable -fmessage-length=0 -fvisibility=hidden -miphoneos-version-min=12.0 -I$(thesysroot)/usr/include/libxml2/ -isysroot $thesysroot" \
+			"CFLAGS=-arch arm64 -pipe -std=c99 -Wno-trigraphs -fpascal-strings -O2 -Wreturn-type -Wunused-variable -fmessage-length=0 -fvisibility=hidden -miphoneos-version-min=12.0 -I$(thesysroot)/usr/include/libxml2/ -isysroot $(thesysroot)" \
 			AR=/usr/bin/ar \
 			"LDFLAGS=$$LDFLAGS"; \
 	fi; \
@@ -169,13 +170,24 @@ deps:
 	fi
 
 clone-jdk:
+	if [ "$(TARGET_JDK)" == "arm" ]; then
+		git clone --depth 1 https://github.com/PojavLauncherTeam/openjdk-aarch32-jdk8u openjdk
+	elif [ "$(BUILD_IOS)" == "1" ]; then
+		git clone --depth 1 --branch ios https://github.com/PojavLauncherTeam/openjdk-multiarch-jdk8u openjdk
+	else
+		git clone --depth 1 https://github.com/PojavLauncherTeam/openjdk-multiarch-jdk8u openjdk
+	fi
 
 jdk-no-configure:
+	export FREETYPE_DIR=$(PWD)/freetype-$(FREETYPE_VERSION)/build_android-$(TARGET_SHORT); \
+	export CUPS_DIR=$(PWD)/cups-2.2.4; \
+	cd openjdk/build/$(JVM_PLATFORM)-$(TARGET_JDK)-normal-$(JVM_VARIANTS)-$(JDK_DEBUG_LEVEL); \
+	make JOBS=4 images
 
 jdk:
-	FREETYPE_DIR=$(PWD)/freetype-$(FREETYPE_VERSION)/build_android-$(TARGET_SHORT); \
-	CUPS_DIR=$(PWD)/cups-2.2.4; \
-	CFLAGS+=" -DLE_STANDALONE"; \
+	export FREETYPE_DIR=$(PWD)/freetype-$(FREETYPE_VERSION)/build_android-$(TARGET_SHORT); \
+	export CUPS_DIR=$(PWD)/cups-2.2.4; \
+	export CFLAGS+=" -DLE_STANDALONE"; \
 	if [ "$(BUILD_IOS)" != "1" ]; then \
 		export CFLAGS+=" -O3"; \
 		ln -s -f /usr/include/X11 $(ANDROID_INCLUDE)/; \
@@ -188,9 +200,9 @@ jdk:
 		ar cru dummy_libs/libthread_db.a; \
 	else \
 		ln -s -f /opt/X11/include/X11 $(ANDROID_INCLUDE)/; \
-		platform_args="--with-toolchain-type=clang"; \
-		AUTOCONF_x11arg="--with-x=/opt/X11/include/X11 --prefix=/usr/lib"; \
-		sameflags="-arch arm64 -isysroot $(thesysroot) -miphoneos-version-min=12.0 -DHEADLESS=1 -I$(PWD)/ios-missing-include -Wno-implicit-function-declaration"; \
+		export platform_args="--with-toolchain-type=clang"; \
+		export AUTOCONF_x11arg="--with-x=/opt/X11/include/X11 --prefix=/usr/lib"; \
+		export sameflags="-arch arm64 -isysroot $(thesysroot) -miphoneos-version-min=12.0 -DHEADLESS=1 -I$(PWD)/ios-missing-include -Wno-implicit-function-declaration"; \
 		export CFLAGS+=" $$sameflags"; \
 		export CXXFLAGS="$$sameflags"; \
 		HOMEBREW_NO_AUTO_UPDATE=1 brew install ldid xquartz; \
@@ -218,3 +230,27 @@ jdk:
 	make JOBS=4 images
 
 package:
+	if [ "$(BUILD_IOS)" != "1" ]; then \
+		git clone https://github.com/termux/termux-elf-cleaner; \
+		cd termux-elf-cleaner; \
+		make CFLAGS=__ANDROID_API__=24 termux-elf-cleaner; \
+		chmod +x termux-elf-cleaner; \
+		cd ..; \
+		findexec() { find $1 -type f -name "*" -not -name "*.o" -exec sh -c '; \
+			case "$(head -n 1 "$1")" in; \
+			  ?ELF*) exit 0;;; \
+			  MZ*) exit 0;;; \
+			  #!*/ocamlrun*)exit0;;; \
+			esac; \
+		exit 1; \
+		' sh {} \; -print; \
+		}; \
+		findexec jreout | xargs -- ./termux-elf-cleaner/termux-elf-cleaner; \
+		findexec jdkout | xargs -- ./termux-elf-cleaner/termux-elf-cleaner; \
+	fi; \
+	sudo cp -R jre_override/lib/* jreout/lib/; \
+	sudo cp -R jre_override/lib/* jdkout/jre/lib; \
+	cd jreout; \
+	tar cJf ../jre8-$(TARGET_SHORT)-`date +%Y%m%d`-${JDK_DEBUG_LEVEL}.tar.xz .; \
+	cd ../jdkout; \
+	tar cJf ../jdk8-$(TARGET_SHORT)-`date +%Y%m%d`-${JDK_DEBUG_LEVEL}.tar.xz .
