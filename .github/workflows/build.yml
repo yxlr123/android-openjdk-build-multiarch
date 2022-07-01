@@ -18,8 +18,14 @@ jobs:
       uses: actions/setup-java@v1
       with:
         java-version: 1.7
-    - name: Build with CI build script
-      run: bash "ci_build_arch_${{matrix.arch}}.sh"
+    - name: step one
+      run: make deps
+    - name: step two
+      run: make clone-jdk
+    - name: step three
+      run: make jdk
+    - name: step four
+      run: make package
     - name: Upload JDK build output
       uses: actions/upload-artifact@v2
       with:
@@ -49,10 +55,22 @@ jobs:
       with:
         java-version: 1.7
 
-    - name: Build with CI build script
+    - name: step one
       run: |
         export BUILD_IOS=1
-        bash "ci_build_arch_aarch64.sh"
+        make deps
+    - name: step two
+      run: |
+        export BUILD_IOS=1
+        make clone-jdk
+    - name: step three
+      run: |
+        export BUILD_IOS=1
+        make jdk
+    - name: step four
+      run: |
+        export BUILD_IOS=1
+        make package
 
     - name: Upload JDK build output
       uses: actions/upload-artifact@v2
