@@ -45,7 +45,7 @@ else
   platform_args="--with-toolchain-type=clang"
   # --disable-precompiled-headers
   AUTOCONF_x11arg="--with-x=/opt/X11/include/X11 --prefix=/usr/lib"
-  sameflags="-O3 -arch arm64 -isysroot $thesysroot -miphoneos-version-min=12.0 -DHEADLESS=1 -I$PWD/ios-missing-include -Wno-implicit-function-declaration"
+  sameflags="-arch arm64 -isysroot $thesysroot -miphoneos-version-min=12.0 -DHEADLESS=1 -I$PWD/ios-missing-include -Wno-implicit-function-declaration"
   export CFLAGS+=" $sameflags"
   export CXXFLAGS="$sameflags"
 
@@ -55,13 +55,8 @@ fi
 # fix building libjawt
 ln -s -f $CUPS_DIR/cups $ANDROID_INCLUDE/
 
-LIBFFI_DIR=libffi-3.4.2/build_iphoneos-arm64
-
 cd openjdk
 #rm -rf build
-
-export LIBFFI_CFLAGS="-I$LIBFFI_DIR/include"
-export LIBFFI_LIBS="-L$LIBFFI_DIR/lib"
 
 #   --with-extra-cxxflags="$CXXFLAGS -Dchar16_t=uint16_t -Dchar32_t=uint32_t" \
 #   --with-extra-cflags="$CPPFLAGS" \
