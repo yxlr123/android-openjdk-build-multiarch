@@ -25,6 +25,9 @@ findexec jdkout | xargs -- ./termux-elf-cleaner/termux-elf-cleaner
 
 fi
 
+rm -rf jreout/lib/fontconfig*
+rm -rf jdkout/jre/lib/fontconfig*
+
 cp -R jre_override/lib/* jreout/lib/
 cp -R jre_override/lib/* jdkout/jre/lib
 
