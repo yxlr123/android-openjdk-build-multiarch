@@ -8,7 +8,7 @@ if [ "$BUILD_IOS" != "1" ]; then
   sudo apt update
   sudo apt -y install autoconf python unzip zip
 
-  wget -nc -nv "https://dl.google.com/android/repository/android-ndk-$NDK_VERSION-linux.zip"
+  wget -nc -nv "https://dl.google.com/android/repository/android-ndk-$NDK_VERSION-linux-x86_64.zip"
   ./extractndk.sh
   ./maketoolchain.sh
 else
