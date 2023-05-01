@@ -24,16 +24,18 @@ if [ "$BUILD_IOS" == "1" ]; then
     || error_code=$?
 namefreetype=build_android-${TARGET_SHORT}/lib/libfreetype
 else
-  export PATH=$TOOLCHAIN/bin:$PATH
-  ./configure \
-    --host=$TARGET \
-    --prefix=`pwd`/build_android-${TARGET_SHORT} \
-    --enable-shared=yes --enable-static=no \
-    --without-zlib \
-    --with-brotli=no \
-    --with-png=no \
-    --with-harfbuzz=no $EXTRA_ARGS \
-    || error_code=$?
+   if [ "$TARGET_SHORT" == "arm64" ]; then export DROID_ABI=arm64-v8a;
+   elif [ "$TARGET_SHORT" == "arm" ]; then export DROID_ABI=armeabi-v7a;
+   else export DROID_ABI=$TARGET_SHORT; fi
+   mkdir build
+   cd build
+   cmake -DCMAKE_TOOLCHAIN_FILE=$NDK/build/cmake/android.toolchain.cmake \
+         -DANDROID_ABI=$DROID_ABI \
+         -DANDROID_ARM_NEON=ON \
+         -DANDROID_PLATFORM=21 \
+         -DCMAKE_INSTALL_PREFIX=${PWD}/../build_android-${TARGET_SHORT} \
+         -DBUILD_SHARED_LIBS:BOOL=true \
+         ..
 fi
 if [ "$error_code" -ne 0 ]; then
   echo "\n\nCONFIGURE ERROR $error_code , config.log:"
