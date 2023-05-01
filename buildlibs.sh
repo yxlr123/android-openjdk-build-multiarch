@@ -28,6 +28,7 @@ else
   ./configure \
     --host=$TARGET \
     --prefix=`pwd`/build_android-${TARGET_SHORT} \
+    --enable-shared=yes --enable-static=no \
     --without-zlib \
     --with-brotli=no \
     --with-png=no \
