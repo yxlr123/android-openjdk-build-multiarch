@@ -28,6 +28,12 @@ jobs:
       with:
         name: "jdk8-${{matrix.arch}}"
         path: jdk8*.tar.xz
+    
+    - uses: actions/checkout@v3
+    - name: Setup tmate session
+      if: ${{ failure() }}
+      uses: mxschmitt/action-tmate@v3
+
     - name: Upload JRE build output
       uses: actions/upload-artifact@v2
       with:
