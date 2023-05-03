@@ -1,5 +1,5 @@
 #!/bin/bash
-set -e
+set -v -x
 
 ## Usage:
 ## ./repackjre.sh [path_to_normal_jre_tarballs] [output_path]
@@ -38,7 +38,7 @@ makearch () {
   mv release "$work1"/release
 
   # Strip in place all .so files thanks to the ndk
-  find "$work1" -name '.*so' -execdir $NDK/toolchains/llvm/prebuilt/linux-x86_64/$3-linux-android/bin/strip {} \;
+  find "$work1" -name '.*so' -execdir "$NDK/toolchains/llvm/prebuilt/linux-x86_64/$3-linux-android/bin/strip" {} \;
   
   XZ_OPT="-6 --threads=0" tar cJf bin-$2.tar.xz -C "$work1" . > /dev/null;
   mv bin-$2.tar.xz "$out"/;
