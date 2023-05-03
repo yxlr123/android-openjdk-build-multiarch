@@ -73,11 +73,10 @@ jobs:
     #needs: build_android
     runs-on: ubuntu-20.04
     steps:
-    - name: Setup ndk
-      uses: actions/checkout@v2
-      run: bash "setupndk.sh"
     - name: Checkout repository
       uses: actions/checkout@v2
+    - name: Setup ndk
+      run: bash "setupndk.sh"
     - name: Get jre17-aarch32
       uses: actions/download-artifact@v2
       with:
