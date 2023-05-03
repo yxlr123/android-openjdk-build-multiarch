@@ -1,6 +1,6 @@
 # Use the old NDK r10e to not get internal compile error at (still?)
 # https://github.com/PojavLauncherTeam/openjdk-multiarch-jdk8u/blob/aarch64-shenandoah-jdk8u272-b10/jdk/src/share/native/sun/java2d/loops/GraphicsPrimitiveMgr.c
-export NDK_VERSION=r21
+
 
 if [ -z "$BUILD_FREETYPE_VERSION" ]
 then
@@ -46,8 +46,7 @@ else
 export JVM_PLATFORM=linux
 # Set NDK
 export API=21
-export NDK=$PWD/android-ndk-$NDK_VERSION
-export ANDROID_NDK_ROOT=$NDK
+
 export TOOLCHAIN=$NDK/generated-toolchains/android-${TARGET_SHORT}-toolchain
 # export TOOLCHAIN=$NDK/toolchains/llvm/prebuilt/linux-x86_64
 
