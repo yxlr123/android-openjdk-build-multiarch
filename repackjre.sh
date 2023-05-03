@@ -18,7 +18,7 @@ mkdir -p $work1
 mkdir -p "$out"
 
 # here comes a not-so-complicated functions to easily make desired arch
-## Usage: makearch [jre_libs_dir_name] [name_in_tarball]
+## Usage: makearch [jre_libs_dir_name] [name_in_tarball] [name of prebuilt tool]
 makearch () {
   echo "Making $2...";
   cd "$work";
@@ -36,6 +36,9 @@ makearch () {
   find ./ -name '*.so' -execdir mv {} "$work1"/lib/{} \;
   
   mv release "$work1"/release
+
+  # Strip in place all .so files thanks to the ndk
+  find "$work1" -name '.*so' -execdir "$NDK/toolchains/llvm/prebuilt/linux-x86_64/$3-linux-android/bin/strip" {}
   
   XZ_OPT="-6 --threads=0" tar cJf bin-$2.tar.xz -C "$work1" . > /dev/null;
   mv bin-$2.tar.xz "$out"/;
@@ -62,10 +65,10 @@ makeuni () {
 
 # now time to use them!
 makeuni
-makearch aarch32 arm
-makearch aarch64 arm64
-makearch i386 x86
-makearch amd64 x86_64
+makearch aarch32 arm arm
+makearch aarch64 arm64 aarch64
+makearch i386 x86 i686
+makearch amd64 x86_64 x86_64
 
 # if running under GitHub Actions, write commit sha, else formatted system date
 if [ -n "$GITHUB_SHA" ]
