@@ -74,7 +74,7 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
     - name: Setup ndk
-      run: bash ""
+      run: bash "setupndk.sh"
     - name: Checkout repository
       uses: actions/checkout@v2
     - name: Get jre17-aarch32
