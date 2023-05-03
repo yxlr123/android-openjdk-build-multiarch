@@ -3,76 +3,78 @@ name: Build OpenJDK 17 for Android and iOS
 on: [push, pull_request, workflow_dispatch]
 
 jobs:
-  build_android:
-    strategy:
-      matrix:
-        arch: [ "aarch32", "aarch64", "x86", "x86_64" ]
-      fail-fast: false
+  # build_android:
+  #   strategy:
+  #     matrix:
+  #       arch: [ "aarch32", "aarch64", "x86", "x86_64" ]
+  #     fail-fast: false
 
-    name: "Build for Android ${{matrix.arch}}"
-    runs-on: ubuntu-20.04
-    steps:
-    - name: Checkout repository
-      uses: actions/checkout@v2
-    - name: set up JDK 1.17
-      uses: actions/setup-java@v1
-      with:
-        java-version: 1.17
-    - name: Build with CI build script
-      run: bash "ci_build_arch_${{matrix.arch}}.sh"
-    - name: Upload JDK build output
-      uses: actions/upload-artifact@v2
-      with:
-        name: "jdk17-${{matrix.arch}}"
-        path: jdk17*.tar.xz
-    - name: Upload JRE build output
-      uses: actions/upload-artifact@v2
-      with:
-        name: 'jre17-${{matrix.arch}}'
-        path: jre17*.tar.xz
-    - name: Upload JRE debuginfo build output
-      uses: actions/upload-artifact@v2
-      with:
-        name: "jre17-debuginfo-${{matrix.arch}}"
-        path: dizout
+  #   name: "Build for Android ${{matrix.arch}}"
+  #   runs-on: ubuntu-20.04
+  #   steps:
+  #   - name: Checkout repository
+  #     uses: actions/checkout@v2
+  #   - name: set up JDK 1.17
+  #     uses: actions/setup-java@v1
+  #     with:
+  #       java-version: 1.17
+  #   - name: Build with CI build script
+  #     run: bash "ci_build_arch_${{matrix.arch}}.sh"
+  #   - name: Upload JDK build output
+  #     uses: actions/upload-artifact@v2
+  #     with:
+  #       name: "jdk17-${{matrix.arch}}"
+  #       path: jdk17*.tar.xz
+  #   - name: Upload JRE build output
+  #     uses: actions/upload-artifact@v2
+  #     with:
+  #       name: 'jre17-${{matrix.arch}}'
+  #       path: jre17*.tar.xz
+  #   - name: Upload JRE debuginfo build output
+  #     uses: actions/upload-artifact@v2
+  #     with:
+  #       name: "jre17-debuginfo-${{matrix.arch}}"
+  #       path: dizout
 
-  build_iosport:
-    name: "Build for iOS aarch64"
-    runs-on: MacStadium
-    continue-on-error: true
-    steps:
-    - name: Checkout repository
-      uses: actions/checkout@v2
+  # build_iosport:
+  #   name: "Build for iOS aarch64"
+  #   runs-on: MacStadium
+  #   continue-on-error: true
+  #   steps:
+  #   - name: Checkout repository
+  #     uses: actions/checkout@v2
 
-    - name: Build with CI build script
-      run: |
-        export PATH=/opt/procursus/bin:/opt/homebrew/bin:$PATH
-        export JAVA_HOME=$(/usr/libexec/java_home -v 17)
-        export BUILD_IOS=1
-        bash "ci_build_arch_aarch64.sh"
+  #   - name: Build with CI build script
+  #     run: |
+  #       export PATH=/opt/procursus/bin:/opt/homebrew/bin:$PATH
+  #       export JAVA_HOME=$(/usr/libexec/java_home -v 17)
+  #       export BUILD_IOS=1
+  #       bash "ci_build_arch_aarch64.sh"
 
-    - name: Upload JDK build output
-      uses: actions/upload-artifact@v2
-      with:
-        name: "jdk17-ios-aarch64"
-        path: jdk17*.tar.xz
+  #   - name: Upload JDK build output
+  #     uses: actions/upload-artifact@v2
+  #     with:
+  #       name: "jdk17-ios-aarch64"
+  #       path: jdk17*.tar.xz
 
-    - name: Upload JRE build output
-      uses: actions/upload-artifact@v2
-      with:
-        name: 'jre17-ios-aarch64'
-        path: jre17*.tar.xz
+  #   - name: Upload JRE build output
+  #     uses: actions/upload-artifact@v2
+  #     with:
+  #       name: 'jre17-ios-aarch64'
+  #       path: jre17*.tar.xz
 
-    - name: Upload JRE debuginfo build output
-      uses: actions/upload-artifact@v2
-      with:
-        name: "jre17-ios-debuginfo-aarch64"
-        path: dizout
+  #   - name: Upload JRE debuginfo build output
+  #     uses: actions/upload-artifact@v2
+  #     with:
+  #       name: "jre17-ios-debuginfo-aarch64"
+  #       path: dizout
 
   pojav:
     needs: build_android
     runs-on: ubuntu-20.04
     steps:
+    - name: Setup ndk
+      run: bash ""
     - name: Checkout repository
       uses: actions/checkout@v2
     - name: Get jre17-aarch32
