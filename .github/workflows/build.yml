@@ -74,6 +74,7 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
     - name: Setup ndk
+      uses: actions/checkout@v2
       run: bash "setupndk.sh"
     - name: Checkout repository
       uses: actions/checkout@v2
