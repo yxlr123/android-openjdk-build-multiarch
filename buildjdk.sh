@@ -42,9 +42,10 @@ if [ "$BUILD_IOS" != "1" ]; then
   ar cru dummy_libs/libthread_db.a
 else
   ln -s -f /opt/X11/include/X11 $ANDROID_INCLUDE/
+  ln -s -f /opt/X11/include/fontconfig $ANDROID_INCLUDE/
   ln -sfn $themacsysroot/System/Library/Frameworks/CoreAudio.framework/Headers $ANDROID_INCLUDE/CoreAudio
   ln -sfn $themacsysroot/System/Library/Frameworks/IOKit.framework/Headers $ANDROID_INCLUDE/IOKit
-  platform_args="--with-toolchain-type=clang"
+  platform_args="SDKNAME=iphoneos --with-toolchain-type=clang"
   # --disable-precompiled-headers
   AUTOCONF_x11arg="--with-x=/opt/X11/include/X11 --prefix=/usr/lib"
   sameflags="-arch arm64 -isysroot $thesysroot -DHEADLESS=1 -I$PWD/ios-missing-include -Wno-implicit-function-declaration"
@@ -58,7 +59,12 @@ fi
 ln -s -f $CUPS_DIR/cups $ANDROID_INCLUDE/
 
 cd openjdk
-#rm -rf build
+
+# Apply patches
+if [ "$BUILD_IOS" == "1" ]; then
+  git reset --hard
+  git apply --reject --whitespace=fix ../patches/jdk8u_ios.diff || echo "git apply failed"
+fi
 
 #   --with-extra-cxxflags="$CXXFLAGS -Dchar16_t=uint16_t -Dchar32_t=uint32_t" \
 #   --with-extra-cflags="$CPPFLAGS" \
