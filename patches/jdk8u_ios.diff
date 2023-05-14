@@ -743,7 +743,7 @@ index b13de4076..ce692bdfb 100644
                          $(EXPORT_LIB_DIR)/sa-jdi.jar
  ADD_SA_BINARIES/universal = $(EXPORT_JRE_LIB_ARCH_DIR)/libsaproc.$(LIBRARY_SUFFIX) \
 diff --git a/hotspot/make/bsd/makefiles/gcc.make b/hotspot/make/bsd/makefiles/gcc.make
-index eb97eb10f..7a0041ccb 100644
+index eb97eb10f..aecd729aa 100644
 --- a/hotspot/make/bsd/makefiles/gcc.make
 +++ b/hotspot/make/bsd/makefiles/gcc.make
 @@ -247,7 +247,8 @@ endif
@@ -756,6 +756,15 @@ index eb97eb10f..7a0041ccb 100644
  endif
  
  ifeq ($(USE_CLANG), true)
+@@ -316,7 +317,7 @@ ifeq ($(USE_CLANG), true)
+   # Known to fail with clang <= 7.0; 
+   # do no optimize these on later clang until verified
+   OPT_CFLAGS/loopTransform.o += $(OPT_CFLAGS/NOOPT)
+-  OPT_CFLAGS/unsafe.o += -O1
++  OPT_CFLAGS/unsafe.o += $(OPT_CFLAGS/NOOPT)
+ else
+   # 6835796. Problem in GCC 4.3.0 with mulnode.o optimized compilation.
+   ifeq ($(shell expr $(CC_VER_MAJOR) = 4 \& $(CC_VER_MINOR) = 3), 1)
 @@ -343,12 +344,20 @@ ifeq ($(OS_VENDOR), Darwin)
    # if built on a newer version of the OS.
    # The expected format is X.Y.Z
