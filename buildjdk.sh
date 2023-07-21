@@ -10,7 +10,7 @@ then
   export CFLAGS+=" -O3 -D__thumb__"
 else
   if [ "$TARGET_JDK" == "x86" ]; then
-     export CFLAGS+=" -O2 -mno-sse"
+     export CFLAGS+=" -O2 -mno-sse -mstackrealign"
   else
      export CFLAGS+=" -O3"
   fi
