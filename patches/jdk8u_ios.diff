@@ -2673,3 +2673,23 @@ index 937cfe72c..9e211d1f1 100644
      $1_EXTRA_LDFLAGS_SUFFIX += $(GLOBAL_LDFLAGS_SUFFIX)
  
      $$($1_TARGET) : $$($1_EXPECTED_OBJS) $$($1_RES) $$($1_REAL_MAPFILE)
+diff --git a/jdk/src/share/classes/sun/security/util/ManifestEntryVerifier.java b/jdk/src/share/classes/sun/security/util/ManifestEntryVerifier.java
+index 303c96d788..aa555cc286 100644
+--- a/jdk/src/share/classes/sun/security/util/ManifestEntryVerifier.java
++++ b/jdk/src/share/classes/sun/security/util/ManifestEntryVerifier.java
+@@ -75,2 +75,14 @@ public class ManifestEntryVerifier {
+ 
++    /**
++     * Create a new ManifestEntryVerifier object.
++     */
++    public ManifestEntryVerifier(Manifest man)
++    {
++        createdDigests = new HashMap<String, MessageDigest>(11);
++        digests = new ArrayList<MessageDigest>();
++        manifestHashes = new ArrayList<byte[]>();
++        this.manifestFileName = "default_name";
++        this.man = man;
++    }
++
+     /**
+
