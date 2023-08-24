@@ -60892,3 +60892,53 @@ index 303c96d788..aa555cc286 100644
 +    }
 +
      /**
+
+diff --git a/jdk/src/share/classes/java/util/Collections.java b/jdk/src/share/classes/java/util/Collections.java
+index 3ab4c5ec06..768854e005 100644
+--- a/jdk/src/share/classes/java/util/Collections.java
++++ b/jdk/src/share/classes/java/util/Collections.java
+@@ -111,2 +111,14 @@ public class Collections {
+ 
++    /**
++     * Old sort allocation implementation can be selected (for
++     * compatibility with broken iterators) using a system property.
++     * This behavior was changed with JDK8_u20
++     */
++    public static final class LegacyAllocationSort {
++        private static final boolean userRequested =
++                java.security.AccessController.doPrivileged(
++                        new sun.security.action.GetBooleanAction(
++                                "java.util.Arrays.useLegacyCollectionsListSort")).booleanValue();
++    }
++
+     /**
+@@ -142,3 +154,13 @@ public class Collections {
+     public static <T extends Comparable<? super T>> void sort(List<T> list) {
+-        list.sort(null);
++        if(LegacyAllocationSort.userRequested) {
++            Object[] a = list.toArray();
++            Arrays.sort(a);
++            ListIterator<T> i = list.listIterator();
++            for (int j=0; j<a.length; j++) {
++                i.next();
++                i.set((T)a[j]);
++            }
++        } else {
++            list.sort(null);
++        }
+     }
+@@ -176,3 +198,13 @@ public class Collections {
+     public static <T> void sort(List<T> list, Comparator<? super T> c) {
+-        list.sort(c);
++        if(LegacyAllocationSort.userRequested) {
++            Object[] a = list.toArray();
++            Arrays.sort(a, (Comparator)c);
++            ListIterator<T> i = list.listIterator();
++            for (int j=0; j<a.length; j++) {
++                i.next();
++                i.set((T)a[j]);
++            }
++        } else {
++            list.sort(c);
++        }
+     }
