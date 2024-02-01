@@ -1,4 +1,4 @@
-name: Build OpenJDK 17 for Android and iOS
+name: Build OpenJDK 21 for Android and iOS
 
 on:
   push:
@@ -10,7 +10,7 @@ on:
 jobs:
   build_iosport:
     name: "Build for iOS aarch64"
-    runs-on: MacStadium
+    runs-on: macOS-latest
     continue-on-error: true
     steps:
     - name: Checkout repository
